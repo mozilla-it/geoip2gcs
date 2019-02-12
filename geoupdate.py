@@ -30,6 +30,10 @@ def setup():
         logging.error('GEO_LICENSE_KEY environment variable is not set.')
         exit(1)
 
+    if not GCS_BUCKET:
+        logging.error('GCS_BUCKET environment variable is not set.')
+        exit(1)
+
 
 def update(product_name, product):
 
