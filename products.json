@@ -1,0 +1,14 @@
+{
+	"GeoIP2-ISP": {
+		"id": "GeoIP2-ISP",
+		"format": "tar.gz"
+	},
+	"GeoIP2-City": {
+		"id": "GeoIP2-City",
+		"format": "tar.gz"
+	},
+	"GeoIP2-Country": {
+		"id": "GeoIP2-Country",
+		"format": "tar.gz"
+	}
+}
