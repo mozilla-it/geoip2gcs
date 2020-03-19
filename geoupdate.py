@@ -7,6 +7,7 @@ import os
 import re
 import requests
 import tarfile
+import zipfile
 
 from google.cloud import storage
 
@@ -36,13 +37,6 @@ def setup():
 
 
 def update(product_name, product):
-
-    if 'zip' in product['format']:
-        raise NotImplementedError('zip archives are '
-                                  'not supported: {0}.'.format(product_name))
-    elif 'tar.gz' in product['format']:
-        pass
-
     download_url = 'https://www.maxmind.com/app/geoip_download?' \
                    'edition_id={0}&suffix={1}&' \
                    'license_key={2}'.format(product['id'],
@@ -64,13 +58,30 @@ def update(product_name, product):
 
 
 def extract_and_upload(filename, product_name, version):
-    extract_file = '{0}_{1}/{0}.mmdb'.format(product_name, version)
-    with tarfile.open(filename, 'r:gz') as tf:
-        tf.extract(extract_file, path=TMP_DIR)
+    if filename.endswith('zip'):
+        with zipfile.ZipFile(filename, 'r') as zf:
+            filelist = zf.namelist()
+            for filepath in filelist:
+                if filepath.endswith('csv'):
+                    extract_file = filepath
+                    filename = extract_file.split('/')[-1]
+                    zf.extract(extract_file, path=TMP_DIR)
 
-    source_file = '{}/{}'.format(TMP_DIR, extract_file)
-    dest_obj_key = '{0}/{1}/{0}.mmdb'.format(product_name, version)
-    upload_blob(source_file, dest_obj_key)
+                    source_file = '{}/{}'.format(TMP_DIR, extract_file)
+                    dest_obj_key = '{0}/{1}/{2}'.format(product_name, version,
+                                                        filename)
+                    upload_blob(source_file, dest_obj_key)
+
+    elif filename.endswith('tar.gz'):
+        extract_file = '{0}_{1}/{0}.mmdb'.format(product_name, version)
+        with tarfile.open(filename, 'r:gz') as tf:
+            tf.extract(extract_file, path=TMP_DIR)
+
+        source_file = '{}/{}'.format(TMP_DIR, extract_file)
+        dest_obj_key = '{0}/{1}/{0}.mmdb'.format(product_name, version)
+        upload_blob(source_file, dest_obj_key)
+    else:
+        raise NotImplementedError('This archive type is not supported')
 
 
 def upload_blob(source_file_name, destination_blob_name):
