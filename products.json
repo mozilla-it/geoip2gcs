@@ -10,5 +10,9 @@
 	"GeoIP2-Country": {
 		"id": "GeoIP2-Country",
 		"format": "tar.gz"
+	},
+	"GeoIP2-ISP-CSV": {
+		"id": "GeoIP2-ISP-CSV",
+		"format": "zip"
 	}
 }
