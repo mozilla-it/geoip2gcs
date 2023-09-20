@@ -37,7 +37,7 @@ def setup():
 
 
 def update(product_name, product):
-    download_url = 'https://geoip.maxmind.com/app/geoip_download?' \
+    download_url = 'https://download.maxmind.com/app/geoip_download?' \
                    'edition_id={0}&suffix={1}&' \
                    'license_key={2}'.format(product['id'],
                                             product['format'], LICENSE_KEY)
