@@ -105,3 +105,10 @@ venv.bak/
 
 # project requirements
 requirements.txt
+
+# work directories
+download/
+tmp/
+
+# artifacts
+v*.zip

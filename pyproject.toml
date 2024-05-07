@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "geoip2gcs"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
-authors = ["André Honeiser <ahoneiser@mozilla.com>"]
+authors = ["Jason Thomas <jthomas@mozilla.com>", "André Honeiser <ahoneiser@mozilla.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -10,10 +10,16 @@ python = "^3.12"
 requests = "^2.31.0"
 google-cloud-storage = "^2.16.0"
 functions-framework = "^3.5.0"
+pydantic = "^2.7.1"
+pydantic-settings = "^2.2.1"
+click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 isort = "^5.13.2"
+
+[tool.poetry.scripts]
+geoip2gcs = "geoip2gcs.main:cli"
 
 [build-system]
 requires = ["poetry-core"]
