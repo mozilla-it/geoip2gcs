@@ -1,24 +1,24 @@
 #!/bin/env python
-from os.path import join as pjoin
 import argparse
 import json
 import logging
 import os
 import re
-import requests
 import tarfile
 import zipfile
+from os.path import join as pjoin
 
+import requests
 from google.cloud import storage
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s %(message)s')
+logging.basicConfig(format="%(asctime)s - %(levelname)s %(message)s")
 
-LICENSE_KEY = os.getenv('GEO_LICENSE_KEY')
-GCS_BUCKET = os.getenv('GCS_BUCKET')
+LICENSE_KEY = os.getenv("GEO_LICENSE_KEY")
+GCS_BUCKET = os.getenv("GCS_BUCKET")
 
-STATE_PATH = 'state'
-DOWNLOAD_DIR = pjoin(os.getcwd(), 'download')
-TMP_DIR = pjoin(os.getcwd(), 'tmp')
+STATE_PATH = "state"
+DOWNLOAD_DIR = pjoin(os.getcwd(), "download")
+TMP_DIR = pjoin(os.getcwd(), "tmp")
 
 
 def setup():
@@ -28,25 +28,25 @@ def setup():
         os.mkdir(TMP_DIR)
 
     if not LICENSE_KEY:
-        logging.error('GEO_LICENSE_KEY environment variable is not set.')
+        logging.error("GEO_LICENSE_KEY environment variable is not set.")
         exit(1)
 
     if not GCS_BUCKET:
-        logging.error('GCS_BUCKET environment variable is not set.')
+        logging.error("GCS_BUCKET environment variable is not set.")
         exit(1)
 
 
 def update(product_name, product):
-    download_url = 'https://download.maxmind.com/app/geoip_download?' \
-                   'edition_id={0}&suffix={1}&' \
-                   'license_key={2}'.format(product['id'],
-                                            product['format'], LICENSE_KEY)
+    download_url = (
+        "https://download.maxmind.com/app/geoip_download?"
+        "edition_id={0}&suffix={1}&"
+        "license_key={2}".format(product["id"], product["format"], LICENSE_KEY)
+    )
 
     version = get_latest_version(download_url)
 
     if check_version(product_name, version):
-        geo_file = '{0}-{1}.{2}'.format(product_name,
-                                        version, product['format'])
+        geo_file = "{0}-{1}.{2}".format(product_name, version, product["format"])
         downloaded_file = download(download_url, geo_file)
         extract_and_upload(downloaded_file, product_name, version)
 
@@ -58,30 +58,29 @@ def update(product_name, product):
 
 
 def extract_and_upload(filename, product_name, version):
-    if filename.endswith('zip'):
-        with zipfile.ZipFile(filename, 'r') as zf:
+    if filename.endswith("zip"):
+        with zipfile.ZipFile(filename, "r") as zf:
             filelist = zf.namelist()
             for filepath in filelist:
-                if filepath.endswith('csv'):
+                if filepath.endswith("csv"):
                     extract_file = filepath
-                    filename = extract_file.split('/')[-1]
+                    filename = extract_file.split("/")[-1]
                     zf.extract(extract_file, path=TMP_DIR)
 
-                    source_file = '{}/{}'.format(TMP_DIR, extract_file)
-                    dest_obj_key = '{0}/{1}/{2}'.format(product_name, version,
-                                                        filename)
+                    source_file = "{}/{}".format(TMP_DIR, extract_file)
+                    dest_obj_key = "{0}/{1}/{2}".format(product_name, version, filename)
                     upload_blob(source_file, dest_obj_key)
 
-    elif filename.endswith('tar.gz'):
-        extract_file = '{0}_{1}/{0}.mmdb'.format(product_name, version)
-        with tarfile.open(filename, 'r:gz') as tf:
+    elif filename.endswith("tar.gz"):
+        extract_file = "{0}_{1}/{0}.mmdb".format(product_name, version)
+        with tarfile.open(filename, "r:gz") as tf:
             tf.extract(extract_file, path=TMP_DIR)
 
-        source_file = '{}/{}'.format(TMP_DIR, extract_file)
-        dest_obj_key = '{0}/{1}/{0}.mmdb'.format(product_name, version)
+        source_file = "{}/{}".format(TMP_DIR, extract_file)
+        dest_obj_key = "{0}/{1}/{0}.mmdb".format(product_name, version)
         upload_blob(source_file, dest_obj_key)
     else:
-        raise NotImplementedError('This archive type is not supported')
+        raise NotImplementedError("This archive type is not supported")
 
 
 def upload_blob(source_file_name, destination_blob_name):
@@ -92,9 +91,9 @@ def upload_blob(source_file_name, destination_blob_name):
 
     blob.upload_from_filename(source_file_name)
 
-    logging.info('File {} uploaded to {}.'.format(
-        source_file_name,
-        destination_blob_name))
+    logging.info(
+        "File {} uploaded to {}.".format(source_file_name, destination_blob_name)
+    )
 
 
 # get latest version based on filename
@@ -102,14 +101,14 @@ def get_latest_version(url):
     # use head request so we don't have to download the whole file
     logging.debug(url)
     r = requests.head(url)
-    filename_header = r.headers['content-disposition']
-    m = re.search('^\w+\W\s\w+=[\W\w\d]+_(\d+)', filename_header)
+    filename_header = r.headers["content-disposition"]
+    m = re.search("^\w+\W\s\w+=[\W\w\d]+_(\d+)", filename_header)
     return m.group(1)
 
 
 def download(url, filename):
     download_file = pjoin(DOWNLOAD_DIR, filename)
-    with open(download_file, 'wb') as fp:
+    with open(download_file, "wb") as fp:
         r = requests.get(url, stream=True)
 
         for block in r.iter_content(1024):
@@ -117,7 +116,7 @@ def download(url, filename):
                 break
             fp.write(block)
 
-    logging.info('Downloaded file to {0}'.format(download_file))
+    logging.info("Downloaded file to {0}".format(download_file))
     return download_file
 
 
@@ -137,7 +136,7 @@ def get_current_state_version(product_name):
     bucket = client.get_bucket(GCS_BUCKET)
     current_version_file = bucket.blob(current_version_path)
     if current_version_file.exists():
-        return current_version_file.download_as_string().decode('utf-8')
+        return current_version_file.download_as_string().decode("utf-8")
     else:
         return None
 
@@ -146,29 +145,30 @@ def get_current_state_version(product_name):
 def check_version(product_name, version):
     current_version = get_current_state_version(product_name)
     if current_version:
-        logging.info('%s, %s' % (current_version, version))
+        logging.info("%s, %s" % (current_version, version))
         if current_version == version:
-            logging.info('{0} is up to date. Version: '
-                         '{1}'.format(product_name, current_version))
+            logging.info(
+                "{0} is up to date. Version: "
+                "{1}".format(product_name, current_version)
+            )
             return False
         elif current_version < version:
-            logging.info('New version found for '
-                         '{0}: {1}'.format(product_name, version))
+            logging.info(
+                "New version found for " "{0}: {1}".format(product_name, version)
+            )
             return True
         else:
-            logging.info('Could not figure out version.')
+            logging.info("Could not figure out version.")
             exit(1)
     else:
-        logging.info('No version file found for '
-                     'product {0}'.format(product_name))
+        logging.info("No version file found for " "product {0}".format(product_name))
         return True
 
 
 def main():
     update_results = []
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--products",
-                        default="products.json")
+    parser.add_argument("-p", "--products", default="products.json")
 
     args = parser.parse_args()
 
@@ -180,5 +180,5 @@ def main():
         update_results.append(update(k, v))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
