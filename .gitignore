@@ -102,3 +102,13 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# project requirements
+requirements.txt
+
+# work directories
+download/
+tmp/
+
+# artifacts
+v*.zip
