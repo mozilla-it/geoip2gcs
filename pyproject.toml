@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "geoip2gcs"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["Jason Thomas <jthomas@mozilla.com>", "André Honeiser <ahoneiser@mozilla.com>"]
 readme = "README.md"
@@ -17,6 +17,9 @@ click = "^8.1.7"
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 isort = "^5.13.2"
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = "^1.8"
 
 [tool.poetry.scripts]
 geoip2gcs = "geoip2gcs.main:cli"
