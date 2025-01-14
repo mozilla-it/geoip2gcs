@@ -14,5 +14,13 @@
 	"GeoIP2-ISP-CSV": {
 		"id": "GeoIP2-ISP-CSV",
 		"format": "zip"
+	},
+	"GeoIP2-City-CSV": {
+		"id": "GeoIP2-City-CSV",
+		"format": "zip"
+	},
+	"GeoIP2-Country-CSV": {
+		"id": "GeoIP2-Country-CSV",
+		"format": "zip"
 	}
 }
